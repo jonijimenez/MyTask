@@ -15,15 +15,21 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 class App extends Component {
   render() {
+    let items = Array(100).fill(0).map((item, index) => {
+        return (
+          <View style={styles.itemContainer} key={index}>
+              <FontAwesome5 name={'square'} style={styles.checkBox}/>
+              <Text>Hello World</Text>
+          </View> )
+    });
+
     return (
       <View style={styles.view}>
 
         {/* HEADER */}
         <View style={styles.headerContainer}>
-            <View style={styles.headerSubContainer}>
-              <Text style={styles.headerTitle}>My Tasks</Text>
-              <FontAwesome5 name={'ellipsis-v'} style={styles.headerIcon}/>
-            </View>
+            <Text style={styles.headerTitle}>My Tasks</Text>
+            <FontAwesome5 name={'ellipsis-v'} style={styles.headerIcon}/>
         </View>
 
         {/* LIST */}
@@ -36,6 +42,7 @@ class App extends Component {
               <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
               <Text>Hello World</Text>
           </View>
+          {/*items*/}
         </ScrollView>
       </View>
     );
@@ -44,9 +51,7 @@ class App extends Component {
 
 const styles = StyleSheet.create({
     view: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      flex: 1
     },
     headerTitle: {
       color: '#fff',
@@ -59,30 +64,25 @@ const styles = StyleSheet.create({
     headerContainer: {
       flexDirection: 'row',
       backgroundColor: '#ff6347',
-      justifyContent: 'space-around',
+      justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 20,
       paddingVertical: 15
     },
-    headerSubContainer : {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
     checkBox: {
       fontSize: 20,
-      color: '#ff6347'
+      color: '#ff6347',
+      marginRight: 10
     },
     scrollView: {
-      backgroundColor: 'blue',
     },
     itemContainer: {
       flex: 1,
       flexDirection: 'row',
+      paddingHorizontal: 15,
       paddingVertical: 10,
-      borderColor: '#fbceb1',
-      borderWidth: 1,
+      borderTopColor: '#fbceb1',
+      borderTopWidth: 1,
     }
 
 });
