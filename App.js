@@ -602,28 +602,32 @@ class App extends Component {
         </ScrollView>
 
         {/* ADD BUTTON */}
-        <TouchableOpacity onPress={this.handleModal.bind(this)} style={styles.addButton}>
+        {/* <TouchableOpacity onPress={this.handleModal.bind(this)} style={styles.addButton}>
           <FontAwesome5 name={'plus'} style={styles.plusButton}/>
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
 
         { this.state.dropDown &&
           <View style={styles.dropDown}>
             <TouchableOpacity onPress={this.handleListModal}>
               <Text style={styles.dropDownItem}>Add New List</Text>
             </TouchableOpacity>
+            <TouchableOpacity onPress={this.handleModal.bind(this)}>
+              <Text style={{...styles.dropDownItem, marginTop: 10}}>Add Task</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity onPress={this.handleDeleteCompleted}>
-              <Text style={{...styles.dropDownItem, marginTop: 7}}>Delete Completed Tasks</Text>
+              <Text style={{...styles.dropDownItem, marginTop: 10}}>Delete Completed Tasks</Text>
             </TouchableOpacity>
 
             {this.state.move ? (
               <TouchableOpacity onPress={this.handleCompleteMove}>
-                <Text style={{...styles.dropDownItem, marginTop: 7}}>
+                <Text style={{...styles.dropDownItem, marginTop: 10}}>
                   Done Moving
                 </Text>
               </TouchableOpacity>
               ) : (
               <TouchableOpacity onPress={this.handleMoveTasks}>
-                <Text style={{...styles.dropDownItem, marginTop: 7}}>
+                <Text style={{...styles.dropDownItem, marginTop: 10}}>
                   Move Tasks
                 </Text>
               </TouchableOpacity>
