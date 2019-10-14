@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
   Alert,
+  Picker,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -90,7 +91,10 @@ class App extends Component {
       editInputModal: false,
       editTask: '',
       editIndex: -1,
-      editSubIndex: -1
+      editSubIndex: -1,
+      dropDown: false,
+      listModal: false,
+      addList: ''
     }
   }
 
@@ -229,6 +233,80 @@ class App extends Component {
     );
   }
 
+  handleDropDown = () => {
+    this.setState({
+      dropDown: this.state.dropDown ? false : true
+    })
+  }
+
+  handleListModal = () => {
+    this.setState({
+      listModal: this.state.listModal ? false : true
+    })
+  }
+
+  handleListCancel = () => {
+    this.setState({
+      listModal: false,
+      addList: '',
+    })
+  }
+
+  handleListSave = () => {
+    let data = this.state.data;
+    data.push({
+      label: this.state.addList,
+      value: []
+    })
+
+    this.setState({
+      data,
+      addList: '',
+      listModal: false,
+      dropDown: false
+    })
+  }
+
+  handleListChange = (text) => {
+    this.setState({
+      addList: text
+    })
+  }
+
+  handleDeleteCompleted = () => {
+    Alert.alert(
+      'Delete Task',
+      'Are you sure you want to delete all completed tasks?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => {
+          let data = this.state.data;
+
+          data = data.filter((item) => {
+            if (typeof item.value === 'object') {
+              item.value = item.value.filter((item2) => {
+                return item2.value === false;
+              });
+              return item.value;
+            } else {
+              return item.value === false;
+            }
+          });
+
+          this.setState({
+            data,
+            dropDown: false
+          })
+        }},
+      ],
+      {cancelable: false},
+    );
+
+  }
+
   render() {
     let stateData = this.state.data;
 
@@ -300,13 +378,15 @@ class App extends Component {
       <View style={styles.view}>
 
         {/* HEADER */}
-        <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={this.handleDropDown.bind(this)}>
+          <View style={styles.headerContainer}>
             <Text style={styles.headerTitle}>My Tasks</Text>
-            <FontAwesome5 name={'ellipsis-v'} style={styles.headerIcon}/>
-        </View>
+              <FontAwesome5 name={'ellipsis-v'} style={styles.headerIcon}/>
+          </View>
+        </TouchableOpacity>
 
         {/* LIST */}
-        <ScrollView contentContainerStyle={styles.scrollView}>
+        <ScrollView contentContainerStyle={{zIndex: 1}}>
           {data}
         </ScrollView>
 
@@ -314,6 +394,17 @@ class App extends Component {
         <TouchableOpacity onPress={this.handleModal.bind(this)} style={styles.addButton}>
           <FontAwesome5 name={'plus'} style={styles.plusButton}/>
         </TouchableOpacity>
+
+        { this.state.dropDown &&
+          <View style={styles.dropDown}>
+            <TouchableOpacity onPress={this.handleListModal}>
+              <Text style={styles.dropDownItem}>Add New List</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={this.handleDeleteCompleted}>
+              <Text style={{...styles.dropDownItem, marginTop: 7}}>Delete Completed Tasks</Text>
+            </TouchableOpacity>
+          </View>
+        }
 
         {/* ADD MODAL */}
         { this.state.textInputModal &&
@@ -377,6 +468,37 @@ class App extends Component {
             </View>
           </View>
         }
+
+        {/* ADD LIST */}
+        { this.state.listModal &&
+          <View style={styles.modalContainer}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.addTaskHeader}>
+                Add List +
+              </Text>
+              <TextInput
+                style={styles.textInput}
+                autoFocus={true}
+                multiline={true}
+                onChangeText={this.handleListChange}
+              />
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  onPress={this.handleListCancel}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={this.handleListSave}
+                >
+                  <Text style={styles.saveText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        }
       </View>
     );
   }
@@ -421,7 +543,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   categoryContainer: {
-    paddingHorizontal: 30
+    flex: 1,
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginLeft: 20,
+    borderTopColor: '#fbceb1',  // apricot
+    borderTopWidth: 1,
   },
   itemCategoryContainer: {
     backgroundColor: '#fbceb1',
@@ -509,8 +637,19 @@ const styles = StyleSheet.create({
   saveText: {
     color: '#fff'
   },
-  categoryAdd: {
-    // fontWeight: 'bold'
+  dropDown: {
+    position: 'absolute',
+    top: 55,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    borderColor: '#fbceb1',
+    borderWidth: 1
+  },
+  dropDownItem: {
+    borderBottomColor: '#fbceb1',
+    borderBottomWidth: 1,
   }
 });
 
