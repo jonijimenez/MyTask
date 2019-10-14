@@ -13,21 +13,6 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    // let data = {
-    //   'Hello': false,
-    //   'Work' : {
-    //     'List Documents': false,
-    //     'Type Data': true
-    //   },
-    //   'Shower': false,
-    //   'Exercise' : {
-    //     'Stretching': false,
-    //     'Push Ups': true
-    //   },
-    //   Eat: true,
-    //   Hello: true
-    // }
-
     let data = [
       {
         label: 'Hello',
@@ -68,18 +53,25 @@ class App extends Component {
     ]
 
     this.state = {
-      data
+      data,
+      background: 'blue'
     }
 
-    // this.renderItem = this.renderItem.bind(this);
   }
 
-  // renderItem(value) {
-  //   if (value === true) {
-  //     return
-  //   }
-  // }
+  handlePress = (index) => {
+    let data = this.state.data;
+    data[index].value = data[index].value ? false : true;
 
+    this.setState({data});
+  }
+
+  handleSubPress = (index, index2) => {
+    let data = this.state.data;
+    data[index].value[index2].value = data[index].value[index2].value ? false : true;
+
+    this.setState({data});
+  }
 
   render() {
     let data = this.state.data.map(function(item, index) {
@@ -87,29 +79,37 @@ class App extends Component {
       if (typeof item.value === 'boolean') {
         return item.value === true ? (
           <View style={styles.itemContainer} key={index}>
-            <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
+            <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
+              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
+            </TouchableOpacity>
             <Text style={styles.strikeThrough}>{item.label}</Text>
           </View>
         ) : (
           <View style={styles.itemContainer} key={index}>
-            <FontAwesome5 name={'square'} style={styles.checkBox}/>
+            <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
+              <FontAwesome5 name={'square'} style={styles.checkBox}/>
+            </TouchableOpacity>
             <Text>{item.label}</Text>
           </View>
         )
       } else if (typeof item.value === 'object') {
         let data2 = item.value.map(function(item2, index2) {
-          return item2.value1 === true ? (
+          return item2.value === true ? (
             <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
+              <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
+                <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
+              </TouchableOpacity>
               <Text style={styles.strikeThrough}>{item2.label}</Text>
             </View>
           ) : (
             <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
-              <FontAwesome5 name={'square'} style={styles.checkBox}/>
+              <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
+                <FontAwesome5 name={'square'} style={styles.checkBox}/>
+              </TouchableOpacity>
               <Text>{item2.label}</Text>
             </View>
           )
-        });
+        }, this);
 
         return (
           <React.Fragment key={index}>
@@ -120,7 +120,8 @@ class App extends Component {
           </React.Fragment>
         );
       }
-    });
+
+    }, this);
 
     return (
       <View style={styles.view}>
