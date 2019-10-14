@@ -95,7 +95,8 @@ class App extends Component {
       editSubIndex: -1,
       dropDown: false,
       listModal: false,
-      addList: ''
+      addList: '',
+      move: true
     }
   }
 
@@ -315,7 +316,71 @@ class App extends Component {
       ],
       {cancelable: false},
     );
+  }
 
+  handleMoveTasks = () => {
+    this.setState({
+      move: this.state.move ? false : true,
+      dropDown: false
+    })
+  }
+
+  handleGoUp = (index, subIndex = -1) => {
+    let data = this.state.data;
+
+    if (subIndex >= 0) {
+      let data2 = data[index].value;
+
+      let item = data2.splice(subIndex, 1);
+      if (subIndex === 0) {
+        // put at bottom
+        data2.splice(data2.length, 0, item[0]);
+      } else {
+        data2.splice(subIndex - 1, 0, item[0]);
+      }
+
+      data[index].value = data2
+
+    } else {
+
+      let item = data.splice(index, 1);
+      if (index === 0) {
+        // put at bottom
+        data.splice(data.length, 0, item[0]);
+      } else {
+        data.splice(index - 1, 0, item[0]);
+      }
+    }
+
+    this.setState({data});
+  }
+
+  handleGoDown = (index, subIndex = -1) => {
+    let data = this.state.data;
+
+    if (subIndex >= 0) {
+      let data2 = data[index].value;
+
+      let item = data2.splice(subIndex, 1);
+      if (subIndex === data2.length) {
+        data2.splice(0, 0, item[0]);
+      } else {
+        data2.splice(subIndex + 1, 0, item[0]);
+      }
+
+      data[index].value = data2;
+    } else {
+
+      // case at the start/end
+      let item = data.splice(index, 1);
+      if (index === data.length) {
+        data.splice(0, 0, item[0]);
+      } else {
+        data.splice(index + 1, 0, item[0]);
+      }
+    }
+
+    this.setState({data});
   }
 
   render() {
@@ -325,40 +390,66 @@ class App extends Component {
       // only two levels of category
       if (typeof item.value === 'boolean') {
         return (
-          <TouchableOpacity
-            key={index}
-            onPress={this.handleEditModal.bind(this, index)}
-            onLongPress={this.handleDelete.bind(this, index)}
-          >
-            <View style={styles.itemContainer}>
+          <View style={styles.itemContainer} key={index}>
+            <View style={{flexDirection: 'row'}}>
               <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
                 { item.value === true ?
                   <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/> :
                   <FontAwesome5 name={'square'} style={styles.checkBox}/>
                 }
               </TouchableOpacity>
-              <Text>{item.label}</Text>
+              <TouchableOpacity
+                onPress={this.handleEditModal.bind(this, index)}
+                onLongPress={this.handleDelete.bind(this, index)}
+                style={{width: '70%'}}
+              >
+                  <Text>{item.label}</Text>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+
+            {this.state.move &&
+              <View style={{flexDirection: 'row'}}>
+                <TouchableOpacity style={{marginRight: 15}} onPress={this.handleGoUp.bind(this, index)}>
+                    <FontAwesome5 name={'arrow-up'} solid style={{fontSize: 22}}/>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={this.handleGoDown.bind(this, index)}>
+                    <FontAwesome5 name={'arrow-down'} solid style={{fontSize: 22}}/>
+                </TouchableOpacity>
+              </View>
+            }
+          </View>
         )
       } else if (typeof item.value === 'object') {
         let data2 = item.value.map(function(item2, index2) {
           return (
-            <TouchableOpacity
-              key={index2}
-              onPress={this.handleEditModal.bind(this, index, index2)}
-              onLongPress={this.handleDelete.bind(this, index, index2)}
-            >
-              <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
-                <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
-                  { item2.value === true ?
-                    <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/> :
-                    <FontAwesome5 name={'square'} style={styles.checkBox}/>
-                  }
-                </TouchableOpacity>
-                <Text>{item2.label}</Text>
+            <View style={styles.categoryContainer} key={index2}>
+                <View style={{flexDirection: 'row'}}>
+                  <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
+                    { item2.value === true ?
+                      <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/> :
+                      <FontAwesome5 name={'square'} style={styles.checkBox}/>
+                    }
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={this.handleEditModal.bind(this, index, index2)}
+                    onLongPress={this.handleDelete.bind(this, index, index2)}
+                    style={{width: '70%'}}
+                  >
+                  <Text>{item2.label}</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {this.state.move &&
+                  <View style={{flexDirection: 'row'}}>
+                    <TouchableOpacity style={{marginRight: 15}} onPress={this.handleGoUp.bind(this, index, index2)}>
+                        <FontAwesome5 name={'arrow-up'} solid style={{fontSize: 22}}/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this.handleGoDown.bind(this, index, index2)}>
+                        <FontAwesome5 name={'arrow-down'} solid style={{fontSize: 22}}/>
+                    </TouchableOpacity>
+                  </View>
+                }
               </View>
-            </TouchableOpacity>
           )
         }, this);
 
@@ -371,11 +462,25 @@ class App extends Component {
             >
               <View style={styles.itemCategoryContainer}>
                 <Text style={styles.itemCategory}>{item.label}</Text>
-                <TouchableOpacity onPress={this.handleCategoryPress.bind(this, index)}>
-                  <Text style={styles.categoryAdd}>Add
-                    <FontAwesome5 name={'plus'} />
-                  </Text>
-                </TouchableOpacity>
+
+                {this.state.move ? (
+
+                  <View style={{flexDirection: 'row'}}>
+                    <TouchableOpacity style={{marginRight: 15}} onPress={this.handleGoUp.bind(this, index)}>
+                        <FontAwesome5 name={'arrow-up'} solid style={{fontSize: 22}}/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this.handleGoDown.bind(this, index)}>
+                        <FontAwesome5 name={'arrow-down'} solid style={{fontSize: 22}}/>
+                    </TouchableOpacity>
+                  </View> ): (
+
+                  <TouchableOpacity onPress={this.handleCategoryPress.bind(this, index)}>
+                    <Text style={styles.categoryAdd}>Add
+                      <FontAwesome5 name={'plus'} />
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
               </View>
             </TouchableOpacity>
             {data2}
@@ -416,6 +521,11 @@ class App extends Component {
             </TouchableOpacity>
             <TouchableOpacity onPress={this.handleDeleteCompleted}>
               <Text style={{...styles.dropDownItem, marginTop: 7}}>Delete Completed Tasks</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={this.handleMoveTasks}>
+              <Text style={{...styles.dropDownItem, marginTop: 7}}>
+                {`${this.state.move ? 'Done Moving' : 'Move Tasks'}`}
+              </Text>
             </TouchableOpacity>
           </View>
         }
@@ -551,6 +661,7 @@ const styles = StyleSheet.create({
   itemContainer: {
     flex: 1,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderTopColor: '#fbceb1',  // apricot
@@ -559,6 +670,7 @@ const styles = StyleSheet.create({
   categoryContainer: {
     flex: 1,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingVertical: 10,
     paddingHorizontal: 15,
     marginLeft: 20,
