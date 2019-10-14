@@ -143,6 +143,8 @@ class App extends Component {
       textInputModal: false,
       catIndex: -1
     })
+
+    this.scrollView.scrollToEnd();
   }
 
   handleCancel = () => {
@@ -286,18 +288,15 @@ class App extends Component {
         {text: 'OK', onPress: () => {
           let data = this.state.data;
           let deletedItem = data.length;
-          console.log('deletedItem Initial ', deletedItem);
 
           data = data.filter((item) => {
             if (typeof item.value === 'object') {
               deletedItem += item.value.length;
-              console.log('deletedItem Object ', item.label, ' ', deletedItem);
               item.value = item.value.filter((item2) => {
                 return item2.value === false;
               });
 
               deletedItem -= item.value.length;
-              console.log('deletedItem Object Remained ', item.label, ' ', deletedItem);
               return item.value;
             } else {
               return item.value === false;
@@ -305,7 +304,6 @@ class App extends Component {
           });
 
           deletedItem -= data.length;
-          console.log('deletedItem end ', deletedItem);
 
           this.setState({
             data,
@@ -399,7 +397,10 @@ class App extends Component {
         </TouchableOpacity>
 
         {/* LIST */}
-        <ScrollView contentContainerStyle={{zIndex: 1}}>
+        <ScrollView
+          contentContainerStyle={{zIndex: 1}}
+           ref={scrollView => { this.scrollView = scrollView }}
+        >
           {data}
         </ScrollView>
 
