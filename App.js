@@ -247,7 +247,6 @@ class App extends Component {
 
     try {
       await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
-      console.log('data ', this.state.data);
     } catch (error) {
       // Error saving data
       console.log('Error saving data will unmount');
@@ -282,7 +281,6 @@ class App extends Component {
 
           try {
             await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
-            console.log('data ', this.state.data);
           } catch (error) {
             // Error saving data
             console.log('Error saving data will unmount');
@@ -330,7 +328,6 @@ class App extends Component {
 
     try {
       await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
-      console.log('data ', this.state.data);
     } catch (error) {
       // Error saving data
       console.log('Error saving data will unmount');
@@ -382,7 +379,6 @@ class App extends Component {
 
           try {
             await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
-            console.log('data ', this.state.data);
           } catch (error) {
             // Error saving data
             console.log('Error saving data will unmount');
@@ -409,7 +405,6 @@ class App extends Component {
 
     try {
       await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
-      console.log('data ', this.state.data);
     } catch (error) {
       // Error saving data
       console.log('Error saving data will unmount');
