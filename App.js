@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {
   Alert,
-  Picker,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -12,6 +11,8 @@ import {
   View
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+
+import AsyncStorage from '@react-native-community/async-storage';
 
 class App extends Component {
   constructor(props) {
@@ -85,7 +86,7 @@ class App extends Component {
     ]
 
     this.state = {
-      data,
+      data: [],
       textInputModal: false,
       addTask: '',
       catIndex: -1,
@@ -96,22 +97,53 @@ class App extends Component {
       dropDown: false,
       listModal: false,
       addList: '',
-      move: true
+      move: false
     }
   }
 
-  handlePress = (index) => {
+  async componentDidMount() {
+    try {
+      let value = await AsyncStorage.getItem('MyTask');
+      value = JSON.parse(value);
+
+      if (value !== null) {
+        // We have data!!
+        this.setState({
+          data: value
+        })
+      }
+    } catch (error) {
+      // Error saving data
+      console.log('Error retrieving data');
+    }
+  }
+
+  handlePress = async (index) => {
     let data = this.state.data;
     data[index].value = data[index].value ? false : true;
 
     this.setState({data});
+
+    try {
+      await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+    } catch (error) {
+      // Error saving data
+      console.log('Error saving data will unmount');
+    }
   }
 
-  handleSubPress = (index, index2) => {
+  handleSubPress = async (index, index2) => {
     let data = this.state.data;
     data[index].value[index2].value = data[index].value[index2].value ? false : true;
 
     this.setState({data});
+
+    try {
+      await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+    } catch (error) {
+      // Error saving data
+      console.log('Error saving data will unmount');
+    }
   }
 
   handleModal = () => {
@@ -126,7 +158,7 @@ class App extends Component {
     })
   }
 
-  handleSave = () => {
+  handleSave = async () => {
     let data = this.state.data;
     let elem = {
       label: this.state.addTask,
@@ -144,6 +176,13 @@ class App extends Component {
       textInputModal: false,
       catIndex: -1
     })
+
+    try {
+      await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+    } catch (error) {
+      // Error saving data
+      console.log('Error saving data will unmount');
+    }
 
     this.scrollView.scrollToEnd();
   }
@@ -189,7 +228,7 @@ class App extends Component {
     })
   }
 
-  handleEditSave = () => {
+  handleEditSave = async () => {
     let data = this.state.data;
 
     if (this.state.editSubIndex >= 0) {
@@ -205,6 +244,15 @@ class App extends Component {
       editSubIndex: -1,
       editInputModal: false
     })
+
+    try {
+      await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+      console.log('data ', this.state.data);
+    } catch (error) {
+      // Error saving data
+      console.log('Error saving data will unmount');
+    }
+
   }
 
   handleDelete = (index, subIndex = -1) => {
@@ -221,7 +269,7 @@ class App extends Component {
           text: 'Cancel',
           style: 'cancel',
         },
-        {text: 'OK', onPress: () => {
+        {text: 'OK', onPress: async () => {
           let data = this.state.data;
 
           if (subIndex >= 0) {
@@ -231,10 +279,20 @@ class App extends Component {
           }
 
           this.setState({data})
+
+          try {
+            await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+            console.log('data ', this.state.data);
+          } catch (error) {
+            // Error saving data
+            console.log('Error saving data will unmount');
+          }
+
         }},
       ],
       {cancelable: false},
     );
+
   }
 
   handleDropDown = () => {
@@ -256,7 +314,7 @@ class App extends Component {
     })
   }
 
-  handleListSave = () => {
+  handleListSave = async () => {
     let data = this.state.data;
     data.push({
       label: this.state.addList,
@@ -269,6 +327,15 @@ class App extends Component {
       listModal: false,
       dropDown: false
     })
+
+    try {
+      await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+      console.log('data ', this.state.data);
+    } catch (error) {
+      // Error saving data
+      console.log('Error saving data will unmount');
+    }
+
   }
 
   handleListChange = (text) => {
@@ -286,7 +353,7 @@ class App extends Component {
           text: 'Cancel',
           style: 'cancel',
         },
-        {text: 'OK', onPress: () => {
+        {text: 'OK', onPress: async () => {
           let data = this.state.data;
           let deletedItem = data.length;
 
@@ -312,6 +379,15 @@ class App extends Component {
           });
 
           ToastAndroid.show(`${deletedItem} item/s deleted`, ToastAndroid.SHORT);
+
+          try {
+            await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+            console.log('data ', this.state.data);
+          } catch (error) {
+            // Error saving data
+            console.log('Error saving data will unmount');
+          }
+
         }},
       ],
       {cancelable: false},
@@ -323,6 +399,22 @@ class App extends Component {
       move: this.state.move ? false : true,
       dropDown: false
     })
+  }
+
+  handleCompleteMove = async () => {
+    this.setState({
+      move: false,
+      dropDown: false
+    })
+
+    try {
+      await AsyncStorage.setItem('MyTask', JSON.stringify(this.state.data));
+      console.log('data ', this.state.data);
+    } catch (error) {
+      // Error saving data
+      console.log('Error saving data will unmount');
+    }
+
   }
 
   handleGoUp = (index, subIndex = -1) => {
@@ -522,11 +614,20 @@ class App extends Component {
             <TouchableOpacity onPress={this.handleDeleteCompleted}>
               <Text style={{...styles.dropDownItem, marginTop: 7}}>Delete Completed Tasks</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={this.handleMoveTasks}>
-              <Text style={{...styles.dropDownItem, marginTop: 7}}>
-                {`${this.state.move ? 'Done Moving' : 'Move Tasks'}`}
-              </Text>
-            </TouchableOpacity>
+
+            {this.state.move ? (
+              <TouchableOpacity onPress={this.handleCompleteMove}>
+                <Text style={{...styles.dropDownItem, marginTop: 7}}>
+                  Done Moving
+                </Text>
+              </TouchableOpacity>
+              ) : (
+              <TouchableOpacity onPress={this.handleMoveTasks}>
+                <Text style={{...styles.dropDownItem, marginTop: 7}}>
+                  Move Tasks
+                </Text>
+              </TouchableOpacity>
+              )}
           </View>
         }
 
