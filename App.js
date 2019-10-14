@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -198,26 +199,54 @@ class App extends Component {
     })
   }
 
+  handleDelete = (index, subIndex = -1) => {
+    let label = this.state.data[index].label;
+    if (subIndex >= 0) {
+      label = this.state.data[index].value[subIndex].label;
+    }
+
+    Alert.alert(
+      'Delete Task',
+      `Are you sure you want to delete task/list?\n\n${label}`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => {
+          let data = this.state.data;
+
+          if (subIndex >= 0) {
+            data[index].value.splice(subIndex, 1);
+          } else {
+            data.splice(index, 1);
+          }
+
+          this.setState({data})
+        }},
+      ],
+      {cancelable: false},
+    );
+  }
+
   render() {
     let stateData = this.state.data;
 
     let data = stateData.map(function(item, index) {
       // only two levels of category
       if (typeof item.value === 'boolean') {
-        return item.value === true ? (
-          <TouchableOpacity onPress={this.handleEditModal.bind(this, index)} key={index}>
+        return (
+          <TouchableOpacity
+            key={index}
+            onPress={this.handleEditModal.bind(this, index)}
+            onLongPress={this.handleDelete.bind(this, index)}
+          >
             <View style={styles.itemContainer}>
               <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
-                <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              </TouchableOpacity>
-                <Text style={styles.strikeThrough}>{item.label}</Text>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={this.handleEditModal.bind(this, index)} key={index}>
-            <View style={styles.itemContainer}>
-              <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
-                <FontAwesome5 name={'square'} style={styles.checkBox}/>
+                { item.value === true ?
+                  <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/> :
+                  <FontAwesome5 name={'square'} style={styles.checkBox}/>
+                }
               </TouchableOpacity>
               <Text>{item.label}</Text>
             </View>
@@ -225,20 +254,18 @@ class App extends Component {
         )
       } else if (typeof item.value === 'object') {
         let data2 = item.value.map(function(item2, index2) {
-          return item2.value === true ? (
-            <TouchableOpacity onPress={this.handleEditModal.bind(this, index, index2)} key={index2}>
+          return (
+            <TouchableOpacity
+              key={index2}
+              onPress={this.handleEditModal.bind(this, index, index2)}
+              onLongPress={this.handleDelete.bind(this, index, index2)}
+            >
               <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
                 <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
-                  <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-                </TouchableOpacity>
-                <Text style={styles.strikeThrough}>{item2.label}</Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={this.handleEditModal.bind(this, index, index2)} key={index2}>
-              <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
-                <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
-                  <FontAwesome5 name={'square'} style={styles.checkBox}/>
+                  { item2.value === true ?
+                    <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/> :
+                    <FontAwesome5 name={'square'} style={styles.checkBox}/>
+                  }
                 </TouchableOpacity>
                 <Text>{item2.label}</Text>
               </View>
@@ -248,7 +275,11 @@ class App extends Component {
 
         return (
           <React.Fragment key={index}>
-            <TouchableOpacity onPress={this.handleEditModal.bind(this, index)} key={index}>
+            <TouchableOpacity
+              key={index}
+              onPress={this.handleEditModal.bind(this, index)}
+              onLongPress={this.handleDelete.bind(this, index)}
+            >
               <View style={styles.itemCategoryContainer}>
                 <Text style={styles.itemCategory}>{item.label}</Text>
                 <TouchableOpacity onPress={this.handleCategoryPress.bind(this, index)}>
