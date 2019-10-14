@@ -83,8 +83,13 @@ class App extends Component {
 
     this.state = {
       data,
-      textInputModal: true,
-      addTask: ''
+      textInputModal: false,
+      addTask: '',
+      catIndex: -1,
+      editInputModal: false,
+      editTask: '',
+      editIndex: -1,
+      editSubIndex: -1
     }
   }
 
@@ -116,60 +121,143 @@ class App extends Component {
 
   handleSave = () => {
     let data = this.state.data;
-    data.push({
+    let elem = {
       label: this.state.addTask,
       value: false
-    });
+    }
+
+    if (this.state.catIndex >= 0) {
+      data[this.state.catIndex].value.push(elem);
+    } else {
+      data.push(elem);
+    }
 
     this.setState({
       data,
-      textInputModal: false
+      textInputModal: false,
+      catIndex: -1
+    })
+  }
+
+  handleCancel = () => {
+    this.setState({
+      textInputModal: false,
+      catIndex: -1,
+      addTask: 0
+    })
+  }
+
+  handleCategoryPress = (index) => {
+    this.setState({
+      textInputModal: true,
+      catIndex: index
+    })
+  }
+
+  handleEditModal = (index, subIndex = -1) => {
+    let editTask = this.state.data[index].label;
+    if (subIndex >= 0) {
+      editTask = this.state.data[index].value[subIndex].label;
+    }
+
+    this.setState({
+      editInputModal: this.state.editInputModal ? false : true,
+      editTask: editTask,
+      editIndex: index,
+      editSubIndex: subIndex
+    })
+  }
+
+  handleEditCancel = () => {
+    this.setState({
+      editInputModal: false,
+    })
+  }
+
+  handleEditChange = (text) => {
+    this.setState({
+      editTask: text
+    })
+  }
+
+  handleEditSave = () => {
+    let data = this.state.data;
+
+    if (this.state.editSubIndex >= 0) {
+      data[this.state.editIndex].value[this.state.editSubIndex].label = this.state.editTask;
+    } else {
+      data[this.state.editIndex].label = this.state.editTask;
+    }
+
+    this.setState({
+      data,
+      editTask: '',
+      editIndex: -1,
+      editSubIndex: -1,
+      editInputModal: false
     })
   }
 
   render() {
-    let data = this.state.data.map(function(item, index) {
+    let stateData = this.state.data;
+
+    let data = stateData.map(function(item, index) {
       // only two levels of category
       if (typeof item.value === 'boolean') {
         return item.value === true ? (
-          <View style={styles.itemContainer} key={index}>
-            <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-            </TouchableOpacity>
-            <Text style={styles.strikeThrough}>{item.label}</Text>
-          </View>
+          <TouchableOpacity onPress={this.handleEditModal.bind(this, index)} key={index}>
+            <View style={styles.itemContainer}>
+              <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
+                <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
+              </TouchableOpacity>
+                <Text style={styles.strikeThrough}>{item.label}</Text>
+            </View>
+          </TouchableOpacity>
         ) : (
-          <View style={styles.itemContainer} key={index}>
-            <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
-              <FontAwesome5 name={'square'} style={styles.checkBox}/>
-            </TouchableOpacity>
-            <Text>{item.label}</Text>
-          </View>
+          <TouchableOpacity onPress={this.handleEditModal.bind(this, index)} key={index}>
+            <View style={styles.itemContainer}>
+              <TouchableOpacity onPress={this.handlePress.bind(this, index)}>
+                <FontAwesome5 name={'square'} style={styles.checkBox}/>
+              </TouchableOpacity>
+              <Text>{item.label}</Text>
+            </View>
+          </TouchableOpacity>
         )
       } else if (typeof item.value === 'object') {
         let data2 = item.value.map(function(item2, index2) {
           return item2.value === true ? (
-            <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
-              <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
-                <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              </TouchableOpacity>
-              <Text style={styles.strikeThrough}>{item2.label}</Text>
-            </View>
+            <TouchableOpacity onPress={this.handleEditModal.bind(this, index, index2)} key={index2}>
+              <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
+                <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
+                  <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
+                </TouchableOpacity>
+                <Text style={styles.strikeThrough}>{item2.label}</Text>
+              </View>
+            </TouchableOpacity>
           ) : (
-            <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
-              <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
-                <FontAwesome5 name={'square'} style={styles.checkBox}/>
-              </TouchableOpacity>
-              <Text>{item2.label}</Text>
-            </View>
+            <TouchableOpacity onPress={this.handleEditModal.bind(this, index, index2)} key={index2}>
+              <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
+                <TouchableOpacity onPress={this.handleSubPress.bind(this, index, index2)}>
+                  <FontAwesome5 name={'square'} style={styles.checkBox}/>
+                </TouchableOpacity>
+                <Text>{item2.label}</Text>
+              </View>
+            </TouchableOpacity>
           )
         }, this);
 
         return (
           <React.Fragment key={index}>
-            <View style={styles.itemCategoryContainer}>
-              <Text style={styles.itemCategory}>{item.label}</Text>
-            </View>
+            <TouchableOpacity onPress={this.handleEditModal.bind(this, index)} key={index}>
+              <View style={styles.itemCategoryContainer}>
+                <Text style={styles.itemCategory}>{item.label}</Text>
+                <TouchableOpacity onPress={this.handleCategoryPress.bind(this, index)}>
+                  <Text style={styles.categoryAdd}>Add
+                    <FontAwesome5 name={'plus'} />
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
             {data2}
           </React.Fragment>
         );
@@ -196,10 +284,13 @@ class App extends Component {
           <FontAwesome5 name={'plus'} style={styles.plusButton}/>
         </TouchableOpacity>
 
+        {/* ADD MODAL */}
         { this.state.textInputModal &&
           <View style={styles.modalContainer}>
             <View style={styles.inputContainer}>
-              <Text style={styles.addTaskHeader}>Add Task +</Text>
+              <Text style={styles.addTaskHeader}>
+                {this.state.catIndex !== -1 ? `[${stateData[this.state.catIndex].label}]` : ''} Add Task +
+              </Text>
               <TextInput
                 style={styles.textInput}
                 autoFocus={true}
@@ -208,7 +299,7 @@ class App extends Component {
               />
               <View style={styles.modalActions}>
                 <TouchableOpacity
-                  onPress={this.handleModal}
+                  onPress={this.handleCancel}
                   style={styles.cancelButton}
                 >
                   <Text style={styles.cancelText}>Cancel</Text>
@@ -216,6 +307,38 @@ class App extends Component {
                 <TouchableOpacity
                   style={styles.saveButton}
                   onPress={this.handleSave}
+                >
+                  <Text style={styles.saveText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        }
+
+        {/* EDIT MODAL */}
+        { this.state.editInputModal &&
+          <View style={styles.modalContainer}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.addTaskHeader}>
+                Edit Task
+              </Text>
+              <TextInput
+                style={styles.textInput}
+                autoFocus={true}
+                multiline={true}
+                onChangeText={this.handleEditChange}
+                value={this.state.editTask}
+              />
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  onPress={this.handleEditCancel}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={this.handleEditSave}
                 >
                   <Text style={styles.saveText}>Save</Text>
                 </TouchableOpacity>
@@ -275,6 +398,9 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderBottomColor: '#ff8c69',  // salmon
     borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   itemCategory: {
     fontWeight: 'bold'
@@ -351,6 +477,9 @@ const styles = StyleSheet.create({
   },
   saveText: {
     color: '#fff'
+  },
+  categoryAdd: {
+    // fontWeight: 'bold'
   }
 });
 
