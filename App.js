@@ -13,60 +13,108 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    let data = {
-      'Hello': false,
-      'Work' : {
-        'List Documents': false,
-        'Type Data': true
+    // let data = {
+    //   'Hello': false,
+    //   'Work' : {
+    //     'List Documents': false,
+    //     'Type Data': true
+    //   },
+    //   'Shower': false,
+    //   'Exercise' : {
+    //     'Stretching': false,
+    //     'Push Ups': true
+    //   },
+    //   Eat: true,
+    //   Hello: true
+    // }
+
+    let data = [
+      {
+        label: 'Hello',
+        value: false
       },
-      'Shower': false,
-      'Exercise' : {
-        'Stretching': false,
-        'Push Ups': true
+      {
+        label: 'Work',
+        value: [{
+            label: 'List Documents',
+            value: false
+          },
+          {
+            label: 'Type Data',
+            value: true
+          },
+        ]
       },
-      Eat: true
-    }
+      {
+        label: 'Shower',
+        value: false
+      },
+      {
+        label: 'Exercise',
+        value: [{
+            label: 'Stretching',
+            value: false
+          },
+          {
+            label: 'Push Ups',
+            value: true
+          }
+        ],
+      },
+      {
+        label: 'Eat',
+        value: true
+      }
+    ]
 
     this.state = {
       data
     }
+
+    // this.renderItem = this.renderItem.bind(this);
   }
 
-  render() {
+  // renderItem(value) {
+  //   if (value === true) {
+  //     return
+  //   }
+  // }
 
-    let data = Object.entries(this.state.data).map(function([key, value], index) {
+
+  render() {
+    let data = this.state.data.map(function(item, index) {
       // only two levels of category
-      if (typeof value === 'boolean') {
-        return value === true ? (
+      if (typeof item.value === 'boolean') {
+        return item.value === true ? (
           <View style={styles.itemContainer} key={index}>
             <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-            <Text style={styles.strikeThrough}>{key}</Text>
+            <Text style={styles.strikeThrough}>{item.label}</Text>
           </View>
         ) : (
-          <View style={styles.itemContainer}>
+          <View style={styles.itemContainer} key={index}>
             <FontAwesome5 name={'square'} style={styles.checkBox}/>
-            <Text>{key}</Text>
+            <Text>{item.label}</Text>
           </View>
         )
-      } else if (typeof value === 'object') {
-        let data2 = Object.entries(value).map(function([key1, value1], index2) {
-          return value1 === true ? (
+      } else if (typeof item.value === 'object') {
+        let data2 = item.value.map(function(item2, index2) {
+          return item2.value1 === true ? (
             <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
               <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              <Text style={styles.strikeThrough}>{key1}</Text>
+              <Text style={styles.strikeThrough}>{item2.label}</Text>
             </View>
           ) : (
             <View style={{...styles.itemContainer, ...styles.categoryContainer}} key={index2}>
               <FontAwesome5 name={'square'} style={styles.checkBox}/>
-              <Text>{key1}</Text>
+              <Text>{item2.label}</Text>
             </View>
           )
         });
 
         return (
-          <React.Fragment key={key}>
+          <React.Fragment key={index}>
             <View style={styles.itemCategoryContainer}>
-              <Text style={styles.itemCategory}>{key}</Text>
+              <Text style={styles.itemCategory}>{item.label}</Text>
             </View>
             {data2}
           </React.Fragment>
@@ -85,47 +133,7 @@ class App extends Component {
 
         {/* LIST */}
         <ScrollView contentContainerStyle={styles.scrollView}>
-          {/* <View style={styles.itemContainer}>
-              <FontAwesome5 name={'square'} style={styles.checkBox}/>
-              <Text>Hello World</Text>
-          </View>
-
-          <View style={styles.itemContainer}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              <Text>Hello World</Text>
-          </View>
-
-          <View style={styles.itemCategoryContainer}>
-            <Text style={styles.itemCategory}>Work</Text>
-          </View>
-          <View style={{...styles.itemContainer, ...styles.categoryContainer}}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              <Text>Hello World</Text>
-          </View>
-           <View style={{...styles.itemContainer, ...styles.categoryContainer}}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              <Text>Hello World</Text>
-          </View>
-
-           <View style={styles.itemContainer}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              <Text>Hello World</Text>
-          </View>
-
-          <View style={styles.itemCategoryContainer}>
-            <Text style={styles.itemCategory}>School</Text>
-          </View>
-          <View style={{...styles.itemContainer, ...styles.categoryContainer}}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              <Text>Hello World</Text>
-          </View>
-           <View style={{...styles.itemContainer, ...styles.categoryContainer}}>
-              <FontAwesome5 name={'check-square'} solid style={styles.checkBox}/>
-              <Text>Hello World</Text>
-          </View>*/}
-
           {data}
-
         </ScrollView>
       </View>
     );
@@ -155,7 +163,7 @@ const styles = StyleSheet.create({
     checkBox: {
       fontSize: 20,
       color: '#ff6347',
-      marginRight: 10
+      marginRight: 15
     },
     strikeThrough: {
       textDecorationLine: 'line-through',
