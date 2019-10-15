@@ -97,7 +97,8 @@ class App extends Component {
       dropDown: false,
       listModal: false,
       addList: '',
-      move: false
+      move: false,
+      today: false
     }
   }
 
@@ -162,7 +163,8 @@ class App extends Component {
     let data = this.state.data;
     let elem = {
       label: this.state.addTask,
-      value: false
+      value: false,
+      today: this.state.today
     }
 
     if (this.state.catIndex >= 0) {
@@ -174,7 +176,8 @@ class App extends Component {
     this.setState({
       data,
       textInputModal: false,
-      catIndex: -1
+      catIndex: -1,
+      today: false
     })
 
     try {
@@ -184,7 +187,7 @@ class App extends Component {
       console.log('Error saving data will unmount');
     }
 
-    this.scrollView.scrollToEnd();
+    // this.scrollView.scrollToEnd();
   }
 
   handleCancel = () => {
@@ -204,15 +207,19 @@ class App extends Component {
 
   handleEditModal = (index, subIndex = -1) => {
     let editTask = this.state.data[index].label;
+    let today = this.state.data[index].today || false;
+
     if (subIndex >= 0) {
       editTask = this.state.data[index].value[subIndex].label;
+      today = this.state.data[index].value[subIndex].today;
     }
 
     this.setState({
       editInputModal: this.state.editInputModal ? false : true,
       editTask: editTask,
       editIndex: index,
-      editSubIndex: subIndex
+      editSubIndex: subIndex,
+      today
     })
   }
 
@@ -233,8 +240,10 @@ class App extends Component {
 
     if (this.state.editSubIndex >= 0) {
       data[this.state.editIndex].value[this.state.editSubIndex].label = this.state.editTask;
+      data[this.state.editIndex].value[this.state.editSubIndex].today = this.state.today;
     } else {
       data[this.state.editIndex].label = this.state.editTask;
+      data[this.state.editIndex].today = this.state.today;
     }
 
     this.setState({
@@ -242,7 +251,8 @@ class App extends Component {
       editTask: '',
       editIndex: -1,
       editSubIndex: -1,
-      editInputModal: false
+      editInputModal: false,
+      today: false
     })
 
     try {
@@ -470,6 +480,12 @@ class App extends Component {
     this.setState({data});
   }
 
+  handleToday = () => {
+    this.setState({
+      today: this.state.today ? false : true
+    });
+  }
+
   render() {
     let stateData = this.state.data;
 
@@ -488,9 +504,14 @@ class App extends Component {
               <TouchableOpacity
                 onPress={this.handleEditModal.bind(this, index)}
                 onLongPress={this.handleDelete.bind(this, index)}
-                style={{width: '70%'}}
+                style={{width: '70%', flexDirection: 'row', justifyContent: 'flex-start'}}
               >
                   <Text>{item.label}</Text>
+                  {item.today &&
+                    <View style={styles.tag}>
+                      <Text style={styles.tagText}>Today</Text>
+                    </View>
+                  }
               </TouchableOpacity>
             </View>
 
@@ -520,9 +541,14 @@ class App extends Component {
                   <TouchableOpacity
                     onPress={this.handleEditModal.bind(this, index, index2)}
                     onLongPress={this.handleDelete.bind(this, index, index2)}
-                    style={{width: '70%'}}
+                    style={{width: '70%', flexDirection: 'row', justifyContent: 'flex-start'}}
                   >
                   <Text>{item2.label}</Text>
+                    {item2.today &&
+                      <View style={styles.tag}>
+                        <Text style={styles.tagText}>Today</Text>
+                      </View>
+                    }
                   </TouchableOpacity>
                 </View>
 
@@ -542,13 +568,14 @@ class App extends Component {
 
         return (
           <React.Fragment key={index}>
-            <TouchableOpacity
-              key={index}
-              onPress={this.handleEditModal.bind(this, index)}
-              onLongPress={this.handleDelete.bind(this, index)}
-            >
-              <View style={styles.itemCategoryContainer}>
+            <View style={styles.itemCategoryContainer}>
+              <TouchableOpacity
+                    onPress={this.handleEditModal.bind(this, index)}
+                    onLongPress={this.handleDelete.bind(this, index)}
+                    style={{width: '70%'}}
+                  >
                 <Text style={styles.itemCategory}>{item.label}</Text>
+              </TouchableOpacity>
 
                 {this.state.move ? (
 
@@ -569,7 +596,6 @@ class App extends Component {
                 )}
 
               </View>
-            </TouchableOpacity>
             {data2}
           </React.Fragment>
         );
@@ -607,11 +633,7 @@ class App extends Component {
               <Text style={styles.dropDownItem}>Add New List</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={this.handleModal.bind(this)}>
-              <Text style={{...styles.dropDownItem, marginTop: 10}}>Add Task</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={this.handleDeleteCompleted}>
-              <Text style={{...styles.dropDownItem, marginTop: 10}}>Delete Completed Tasks</Text>
+              <Text style={{...styles.dropDownItem, marginTop: 10}}>Add New Task</Text>
             </TouchableOpacity>
 
             {this.state.move ? (
@@ -627,6 +649,10 @@ class App extends Component {
                 </Text>
               </TouchableOpacity>
               )}
+
+              <TouchableOpacity onPress={this.handleDeleteCompleted}>
+                <Text style={{...styles.dropDownItem, marginTop: 10}}>Delete Completed Tasks</Text>
+              </TouchableOpacity>
           </View>
         }
 
@@ -634,9 +660,20 @@ class App extends Component {
         { this.state.textInputModal &&
           <View style={styles.modalContainer}>
             <View style={styles.inputContainer}>
-              <Text style={styles.addTaskHeader}>
-                {this.state.catIndex !== -1 ? `[${stateData[this.state.catIndex].label}]` : ''} Add Task +
-              </Text>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text style={styles.addTaskHeader}>
+                  {this.state.catIndex !== -1 ? `[${stateData[this.state.catIndex].label}]` : ''} Add Task +
+                </Text>
+                <TouchableOpacity onPress={this.handleToday.bind(this)} style={{flexDirection: 'row'}}>
+                  { this.state.today === true ?
+                    <FontAwesome5 name={'check-square'} style={styles.todayCheckBox}/> :
+                    <FontAwesome5 name={'square'} style={styles.todayCheckBox}/>
+                  }
+                  <Text style={styles.tag}>
+                    Today
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={styles.textInput}
                 autoFocus={true}
@@ -665,9 +702,20 @@ class App extends Component {
         { this.state.editInputModal &&
           <View style={styles.modalContainer}>
             <View style={styles.inputContainer}>
-              <Text style={styles.addTaskHeader}>
-                Edit Task
-              </Text>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text style={styles.addTaskHeader}>
+                  Edit Task
+                </Text>
+                <TouchableOpacity onPress={this.handleToday.bind(this)} style={{flexDirection: 'row'}}>
+                  { this.state.today === true ?
+                    <FontAwesome5 name={'check-square'} style={styles.todayCheckBox}/> :
+                    <FontAwesome5 name={'square'} style={styles.todayCheckBox}/>
+                  }
+                  <Text>
+                    Today
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={styles.textInput}
                 autoFocus={true}
@@ -876,6 +924,23 @@ const styles = StyleSheet.create({
   dropDownItem: {
     borderBottomColor: '#fbceb1',
     borderBottomWidth: 1,
+  },
+  todayCheckBox: {
+    fontSize: 20,
+    color: '#ff6347',
+    marginRight: 5
+  },
+  tag: {  // '#ff8c69' '#fbceb1' '#ff6347'
+    backgroundColor: '#ff6347',
+    borderWidth: 1,
+    borderColor: '#ff6347',
+    marginLeft: 7,
+    borderRadius: 5,
+    paddingHorizontal: 5,
+    justifyContent: 'center'
+  },
+  tagText: {
+    color: '#fff'
   }
 });
 
