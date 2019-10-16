@@ -177,7 +177,8 @@ class App extends Component {
       data,
       textInputModal: false,
       catIndex: -1,
-      today: false
+      today: false,
+      dropDown: false
     })
 
     try {
@@ -194,7 +195,8 @@ class App extends Component {
     this.setState({
       textInputModal: false,
       catIndex: -1,
-      addTask: 0
+      addTask: 0,
+      dropDown: false
     })
   }
 
@@ -319,6 +321,7 @@ class App extends Component {
     this.setState({
       listModal: false,
       addList: '',
+      dropDown: false
     })
   }
 
@@ -669,7 +672,7 @@ class App extends Component {
                     <FontAwesome5 name={'check-square'} style={styles.todayCheckBox}/> :
                     <FontAwesome5 name={'square'} style={styles.todayCheckBox}/>
                   }
-                  <Text style={styles.tag}>
+                  <Text>
                     Today
                   </Text>
                 </TouchableOpacity>
